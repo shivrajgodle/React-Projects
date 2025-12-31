@@ -33,12 +33,12 @@ export const MusicPlayer = () => {
     }
 
 
-     const handleVolumeChange = (e) => {
+    const handleVolumeChange = (e) => {
         const newVolume = parseFloat(e.target.value);
         setVolume(newVolume);
     }
 
-     useEffect(() => {
+    useEffect(() => {
         const audio = audioRef.current;
         if(!audio) return;
 

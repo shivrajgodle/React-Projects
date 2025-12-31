@@ -1,4 +1,4 @@
-import { createContext , useContext, useState } from "react"
+import { createContext , useContext, useEffect, useState } from "react"
 
 const MusicContext = createContext();
 
@@ -71,6 +71,25 @@ export const MusicProvider = ({children}) => {
         const [duration , setDuration] = useState(0);
         const [isPlaying, setIsPlaying] = useState(false);
         const [volume , setVolume] = useState(1);
+        const [playlists , setPlaylists] = useState([]);
+
+
+        useEffect(() => {
+            const savedPlaylists = localStorage.getItem("musicPlayerPlaylists");
+            if(savedPlaylists) {
+                const playlist = JSON.parse(savedPlaylists);
+                setPlaylists(playlist);
+            }
+        }, []);
+
+        useEffect(() => {
+            if(playlists.length > 0){
+                localStorage.setItem("musicPlayerPlaylists", JSON.stringify(playlists))
+            }else{
+                localStorage.removeItem("musicPlayerPlaylists")
+            }
+        },[playlists])
+
     
         const handlePlaySong = (song,index) => {
             setCurrentTrack(song);
@@ -106,6 +125,30 @@ export const MusicProvider = ({children}) => {
             return `${minutes}:${seconds.toString().padStart(2, "0")}`;
         };
     
+        const createPlaylist = (name) => {
+            const newPlaylist = {
+                id: Date.now(),
+                name,
+                songs: [],
+            };
+
+            setPlaylists((prev) => [...prev , newPlaylist]);
+        }
+
+        const deletePlaylist = (playlistId) => {
+            setPlaylists((prev) => prev.filter((playlist) => playlist.id !== playlistId))
+        }
+
+        const addSongToPlaylist = (playlistId, song) => {
+            setPlaylists((prev)=> 
+                prev.map((playlist) => {
+                if(playlist.id === playlistId) {
+                    return {...playlist, songs: [...playlist.songs , song]}
+                }else{
+                    return playlist;
+                }
+            }))
+        }   
     
         const play = () => setIsPlaying(true);
         const pause = () => setIsPlaying(false);
@@ -125,7 +168,13 @@ export const MusicProvider = ({children}) => {
         isPlaying,
         volume,
         formatTime,
-        setVolume}
+        setVolume,
+        playlists,
+        createPlaylist,
+        addSongToPlaylist,
+        setCurrentTrack,
+        deletePlaylist
+    }
     }>
         {children}
     </MusicContext.Provider>
